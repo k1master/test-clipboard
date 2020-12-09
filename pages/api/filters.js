@@ -3,5 +3,5 @@ import filters from '../../data/filters';
 
 export default async (req, res) => {
   res.statusCode = 200;
-  res.json(filters)
+  return res.status(200).json(filters);
 }

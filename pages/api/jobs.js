@@ -1,15 +1,82 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import filters from '../../data/filters';
+import orderBy from 'lodash/orderBy';
 
-export default async (req, res) => {
+import jobs from '../../data/jobs.json';
+
+const getJobs = async (req, res) => {
+  const body = req.body;
   res.statusCode = 200;
-  // @todo: implement filters and search
-  // @todo: implement automated tests
-
-  // this timeout emulates unstable network connection, do not remove this one
-  // you need to figure out how to guarantee that client side will render
-  // correct results even if server-side can't finish replies in the right order
   await new Promise((resolve)=>setTimeout(resolve, 1000 * Math.random()));
-  
-  res.json({})
+  res.json(fetchJobs(body));
 }
+
+export const fetchJobs = (body) => {
+  let jobsList = [];
+  jobs.map(job => {
+    let filteredJobs = job.items;
+
+    if (body.search) {
+      filteredJobs = job.items.filter(item => searchWithKeyword(item, body.search));
+    }
+    
+    if (filteredJobs.length && Object.keys(body.sort).length > 0) {
+      filteredJobs = sortingJobs(filteredJobs, body.sort);
+    }
+    
+    if (filteredJobs.length) {
+      jobsList.push({
+        ...job,
+        total_jobs_in_hospital: filteredJobs.length,
+        items: filteredJobs
+      });
+    }
+  });
+  return jobsList;
+}
+
+const searchWithKeyword = (job, search) => {
+  return Object.values(job).some(val => {
+    if (typeof val === 'string') {
+      return val.toLowerCase().includes(search.toLowerCase());
+    } else if (typeof val === 'object') {
+      return searchWithKeyword(val, search);
+    }
+  });
+}
+
+const sortingJobs = (jobs, sort) => {
+
+  
+  let sortingParams = [];
+  let sortingParamsOrder = [];
+  let isExistedCreatedInSort = false;
+
+  Object.keys(sort).forEach(key => {
+    if (key !== 'created') {
+      sortingParams.push(key);
+      sortingParamsOrder.push(sort[key]);
+    } else {
+     isExistedCreatedInSort = true;
+    }
+  });
+
+  jobs = orderBy(jobs, sortingParams, sortingParamsOrder);
+
+  if (isExistedCreatedInSort) {
+    sortByDate(jobs, sort['created']);
+  }
+
+  return jobs;
+}
+
+const sortByDate = (jobs, order) => {
+  jobs.sort(function(a, b) {
+    if (order === 'asc') {
+      return new Date(b.created) - new Date(a.created);
+    } else {
+      return new Date(a.created) - new Date(b.created);
+    }
+  });
+  return jobs;
+}
+
+export default getJobs;

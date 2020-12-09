@@ -1,65 +1,76 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import { useState, useEffect } from 'react'
+import Header from '../components/shared/Header'
+import Footer from '../components/shared/Footer'
+import JobList from '../components/jobs/JobList'
+import JobFilter from '../components/jobs/JobFilter'
+import { useSearch } from '../components/jobs/JobProvider'
+import SearchIcon from '../components/shared/icons/SearchIcon'
 
-export default function Home() {
+export default function IndexPage() {
+  const [jobs, setJobs] = useState([])
+  const [filters, setFilters] = useState({})
+  const { payload, setPayload } = useSearch()
+
+  const onChangeSearch = (val) => {
+    setPayload({
+      search: val,
+      sort: payload.sort
+    })
+  }
+
+  useEffect(() => {
+    async function getJobs() {
+      let response = await fetch('api/jobs', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      let res = await response.json()
+      setJobs(res)
+    }
+    async function getFilters() {
+      const res = await fetch('api/filters')
+      let data = await res.json()
+      setFilters(data)
+    }
+    getJobs()
+    getFilters()
+  }, [payload])
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <div>
+      <Header/>
+      <div className="m-content">
+        <div className="m-container container">
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+          <div className="mx-2">
+            <div className="m-searchbar-icon">
+              <SearchIcon />
+            </div>
+            <input
+              type="search"
+              placeholder="Search for any job, title, keywords or company"
+              onChange={(e) => onChangeSearch(e.target.value)}
+              className="m-searchbar-input"/>
+          </div>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          <div className="flex">
+            <div className="m-filter-container lg:flex w-1/4">
+              {
+                Object.keys(filters).map( (item, index) => (
+                  <JobFilter name={ (item.split('_')).join(" ").toUpperCase() } data={filters} filter={item} key={index}/>
+                ))
+              }
+            </div>
+            <div className="m-joblist-container lg:w-3/4">
+              <JobList jobs={jobs}/>
+            </div>
+          </div>
         </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+      </div>
+      <Footer />
     </div>
-  )
+  );
 }

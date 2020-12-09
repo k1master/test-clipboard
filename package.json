@@ -3,13 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "mocha -r esm"
   },
   "dependencies": {
+    "autoprefixer": "^10.1.0",
+    "esm": "^3.2.25",
     "next": "10.0.3",
+    "postcss": "^8.2.0",
     "react": "17.0.1",
-    "react-dom": "17.0.1"
+    "react-dom": "17.0.1",
+    "tailwindcss": "^2.0.1"
+  },
+  "devDependencies": {
+    "mocha": "^8.2.1"
   }
 }
