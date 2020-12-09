@@ -44,17 +44,17 @@ const JobList = ({ jobs }) => {
  
   return (
     <div className="m-joblist-content relativew-full">
-      <div className="m-joblist-sort">
+      <div className="m-joblist-sort md:flex md:justify-between">
         <h2>
          {totalCount} job postings
         </h2>
-        <div className="hidden lg:flex">
-          <h2 className="px-2 text-gray-500">Sort by</h2>
+        <div className="flex">
+          <h2 className="text-gray-500 text-sm items-center flex">Sort by</h2>
           {
             sort_by
             .filter((item) => payload['sort'][item.key] != 'removed')
             .map( (item, index) => (
-              <h2 className={`px-2 cursor-pointer items-center flex ${payload['sort'][item.key] != undefined ? 'text-blue-400' : ''}`} key={index} onClick={()=>onChangeSort(item.key)}>
+              <h2 className={`md:px-2 text-sm px-1 cursor-pointer items-center flex ${payload['sort'][item.key] != undefined ? 'text-blue-400' : ''}`} key={index} onClick={()=>onChangeSort(item.key)}>
                 {item.title}
                 { payload['sort'][item.key] != undefined &&
                   payload['sort'][item.key] == 'asc' &&
